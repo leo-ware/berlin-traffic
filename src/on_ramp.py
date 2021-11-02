@@ -1,5 +1,5 @@
 from src.abstract_asphalt import AbstractAsphalt
-from src.warnings import NotConnectedWarning, OneWayError
+from src.warnings import NoOutlet, OneWayError
 import numpy as np
 
 
@@ -12,7 +12,7 @@ class OnRamp(AbstractAsphalt):
         if self.next is not None:
             self.next.push(np.array([0]), np.array([0]))
         else:
-            raise NotConnectedWarning()
+            raise NoOutlet()
 
     def push(*_):
         raise OneWayError()
