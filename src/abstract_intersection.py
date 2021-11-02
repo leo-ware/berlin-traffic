@@ -14,6 +14,9 @@ class AbstractIntersection(AbstractAsphalt, ABC):
         else:
             self.out_rates = out_rates
 
+        if not len(self.out_lanes) == len(self.out_rates):
+            raise ValueError("out_lanes and out_rates must be same length")
+
     def select_outgoing_lanes(self, n_cars):
         """Pick outgoing lanes for cars according to defined likelihoods"""
         if not self.out_lanes:
@@ -24,3 +27,8 @@ class AbstractIntersection(AbstractAsphalt, ABC):
             size=n_cars,
             p=self.out_rates
         )
+
+    def push(self, positions, speeds):
+        lanes = self.select_outgoing_lanes(len(positions))
+        for i in range(len(self.out_lanes)):
+            self.out_lanes[i].push(positions[lanes == i], speeds[lanes == i])

@@ -51,6 +51,13 @@ class Lane(AbstractAsphalt):
         if self.next and len(flushed_positions):
             self.next.push(flushed_positions - self.length, flushed_speeds)
 
+    def closest_car(self):
+        """the location of the farthest back car (= number of cars lane can accept)"""
+        if len(self.positions):
+            return self.positions[0]
+        else:
+            return self.length
+
     def push(self, positions, speeds = None):
         """Add new cars to the beginning of the lane"""
 
@@ -58,11 +65,7 @@ class Lane(AbstractAsphalt):
             if (speeds is not None) and (len(positions) != len(speeds)):
                 raise ValueError("positions and speeds must be same length")
 
-            if len(self.positions):
-                closest_car = self.positions[0]
-            else:
-                closest_car = self.length
-
+            closest_car = self.closest_car()
             if len(positions) >= closest_car:
                 raise TooCrowded("no space in lane")
 

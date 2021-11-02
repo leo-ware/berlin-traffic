@@ -52,6 +52,13 @@ def test_flush():
     assert list(lane.positions) == []
 
 
+def test_closest_car():
+    lane = Lane(10)
+    assert lane.closest_car() == 10
+    lane.push([3, 6])
+    assert lane.closest_car() == 3
+
+
 def test_step():
     lane = Lane(10, p_slow=0)
     pos = np.array([3, 5, 9])
