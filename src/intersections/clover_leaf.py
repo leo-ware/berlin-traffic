@@ -1,4 +1,4 @@
-from src.abstract_intersection import AbstractIntersection
+from src.intersections.abstract_intersection import AbstractIntersection
 
 
 class CloverLeaf(AbstractIntersection):
