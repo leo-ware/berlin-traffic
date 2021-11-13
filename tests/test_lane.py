@@ -1,4 +1,4 @@
-from src.lane import Lane
+from src.streets.lane import Lane
 from src.warnings import *
 
 import pytest

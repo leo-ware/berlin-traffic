@@ -1,5 +1,5 @@
-from src.lane import Lane
-from src.traffic_light import PeriodicTrafficLight, AbstractTrafficLight
+from src.streets.lane import Lane
+from src.intersections.traffic_light import PeriodicTrafficLight, AbstractTrafficLight
 import pytest
 
 
