@@ -19,7 +19,7 @@ nodes = [
     'Zentral und Landesbibliothek'
 ]
 
-boundary_intersections = [
+boundary_nodes = [
     'Alexanderplatz',
     'Brandenburger Tor',
     'Friedrichstadt-Palast',

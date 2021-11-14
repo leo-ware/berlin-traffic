@@ -13,11 +13,7 @@ class AbstractIntersection(AbstractAsphalt, ABC):
 
         self.in_lanes = list(in_lanes)
         self.out_lanes = list(out_lanes)
-
-        if out_rates is None:
-            self.out_rates = np.ones(len(out_lanes)) / len(out_lanes)
-        else:
-            self.out_rates = out_rates
+        self._out_rates = out_rates
 
         if not len(self.out_lanes) == len(self.out_rates):
             raise ValueError("out_lanes and out_rates must be same length")
@@ -25,16 +21,28 @@ class AbstractIntersection(AbstractAsphalt, ABC):
     def __repr__(self):
         return f"{self.__class__.__name__}({self.name})"
 
+    @property
+    def out_rates(self):
+        if self._out_rates is None:
+            return np.ones(len(self.out_lanes)) / len(self.out_lanes)
+        else:
+            return self._out_rates
+
     def select_outgoing_lanes(self, n_cars):
         """Pick outgoing lanes for cars according to defined likelihoods"""
         if not self.out_lanes:
             raise ValueError("no outgoing lanes")
 
-        return np.random.choice(
-            np.arange(len(self.out_lanes)),
-            size=n_cars,
-            p=self.out_rates
-        )
+        try:
+            return np.random.choice(
+                np.arange(len(self.out_lanes)),
+                size=n_cars,
+                p=self.out_rates
+            )
+        except ValueError:
+            print("a=", np.arange(len(self.out_lanes)))
+            print("p=", self.out_rates)
+            raise
 
     def push(self, positions, speeds):
         lanes = self.select_outgoing_lanes(len(positions))

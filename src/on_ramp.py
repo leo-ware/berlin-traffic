@@ -11,6 +11,9 @@ class OnRamp(AbstractAsphalt):
         self.p = p
         self.next = next
 
+    def __repr__(self):
+        return "<>"
+
     def step(self):
         if self.next is None:
             raise NoOutlet()
