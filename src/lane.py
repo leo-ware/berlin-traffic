@@ -4,7 +4,8 @@ import numpy as np
 
 
 class Lane(AbstractAsphalt):
-    def __init__(self, length, p_slow=0.1, next: AbstractAsphalt = None, green=True, speed_limit=5):
+    def __init__(self, length=float("inf"), p_slow=0.1, next: AbstractAsphalt = None, green=True, speed_limit=5):
+        """Class that represents a single, unidirectional lane"""
         super().__init__()
 
         # params
@@ -18,7 +19,8 @@ class Lane(AbstractAsphalt):
         self.speeds = np.array([])
         self.positions = np.array([])
 
-    def step(self):
+    def step(self) -> None:
+        """Process one time step of the simulation"""
         if len(self.positions):
             # step 1: acceleration
             self.speeds += 1
@@ -38,7 +40,7 @@ class Lane(AbstractAsphalt):
             if self.green:
                 self.flush()
 
-    def flush(self):
+    def flush(self) -> None:
         """Remove cars which have driven past the end of the lane"""
 
         flush_from_index = np.searchsorted(self.positions, self.length, side="left")
@@ -51,14 +53,38 @@ class Lane(AbstractAsphalt):
         if self.next and len(flushed_positions):
             self.next.push(flushed_positions - self.length, flushed_speeds)
 
-    def closest_car(self):
+    def closest_car(self) -> int:
         """the location of the farthest back car (= number of cars lane can accept)"""
         if len(self.positions):
             return self.positions[0]
         else:
             return self.length
 
-    def push(self, positions, speeds = None):
+    def n_queued(self) -> int:
+        """Number of cars which are queued at the end of the lane"""
+        crushed_pos = np.arange(-len(self.positions), 0) + self.length
+        return np.sum(crushed_pos == self.positions)
+
+    def density(self) -> float:
+        """Portion of the lane which is full of cars"""
+        return len(self.positions)/self.length
+
+    def average_speed(self) -> float:
+        """The average speed of cars in the lane"""
+        if len(self.positions) == 0:
+            return 0
+        return np.mean(self.speeds)
+
+    def flow(self) -> float:
+        """The flow of the lane"""
+        return self.density() * self.average_speed()
+
+    # # i'm not sure this makes sense
+    # def flow_normalized(self) -> float:
+    #     """The flow of the lane as a proportion of speed limit (the highest possible value)"""
+    #     return self.flow()/self.speed_limit
+
+    def push(self, positions, speeds = None) -> None:
         """Add new cars to the beginning of the lane"""
 
         if len(positions):
@@ -78,3 +104,9 @@ class Lane(AbstractAsphalt):
 
             self.positions = np.hstack([positions, self.positions])
             self.speeds = np.hstack([speeds, self.speeds])
+
+    def to_array(self) -> np.array:
+        """Generate array representation of the lane"""
+        arr = np.zeros(int(self.length))
+        arr.put(self.positions.astype(int), 1)
+        return arr

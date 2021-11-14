@@ -1,27 +1,44 @@
-import networkx as nx
-
 nodes = [
-    "Parlament der Bäume",
-    "Friedrichstadt-Palast",
-    "Brandenburger Tor",
-    "Unter den Linden",
-    "Führerbunker",
-    "Gendarmenmarkt",
-    "Museum for Communication",
-    "Jugendpark",
-    "Marion-Gräfin-Dönhoff-Platz",
-    "Zentral und Landesbibliothek",
-    "Marx-Engels-Forum",
-    "Alte Münze",
-    "Alexanderplatz",
-    "Haus des Lehrers",
-    "Weltzeituhr",
-    "Jannowitzbrücke",
-    "KitKat",
-    "Michaelkirchplatz"
+    'Alexanderplatz',
+    'Alte Münze',
+    'Brandenburger Tor',
+    'Friedrichstadt-Palast',
+    'Führerbunker',
+    'Gendarmenmarkt',
+    'Haus des Lehrers',
+    'Jannowitzbrücke',
+    'Jugendpark',
+    'KitKat',
+    'Marion-Gräfin-Dönhoff-Platz',
+    'Marx-Engels-Forum',
+    'Michaelkirchplatz',
+    'Museum for Communication',
+    'Parlament der Bäume',
+    'Unter den Linden',
+    'Weltzeituhr',
+    'Zentral und Landesbibliothek'
+]
+
+boundary_intersections = [
+    'Alexanderplatz',
+    'Brandenburger Tor',
+    'Friedrichstadt-Palast',
+    'Führerbunker',
+    'Haus des Lehrers',
+    'Jannowitzbrücke',
+    'KitKat',
+    'Marion-Gräfin-Dönhoff-Platz',
+    'Michaelkirchplatz',
+    'Museum for Communication',
+    'Parlament der Bäume',
 ]
 
 edges = [
+    [
+        'Unter den Linden',
+        'Marx-Engels-Forum',
+        1.6
+    ],
     [
         "Parlament der Bäume",
         "Friedrichstadt-Palast",
@@ -138,8 +155,3 @@ edges = [
         0.55
     ]
 ]
-
-G = nx.Graph()
-G.add_nodes_from(nodes)
-for u, v, l in edges:
-    G.add_edge(u, v, length=l)

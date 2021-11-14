@@ -4,8 +4,13 @@ from src.abstract_asphalt import AbstractAsphalt
 
 
 class AbstractIntersection(AbstractAsphalt, ABC):
-    def __init__(self, in_lanes=(), out_lanes=(), out_rates=None):
+    def __init__(self, name: str = None, in_lanes=(), out_lanes=(), out_rates=None):
         super().__init__()
+        if name is None:
+            self.name = f"intersection_id#{self._id}"
+        else:
+            self.name = name
+
         self.in_lanes = list(in_lanes)
         self.out_lanes = list(out_lanes)
 
@@ -16,6 +21,9 @@ class AbstractIntersection(AbstractAsphalt, ABC):
 
         if not len(self.out_lanes) == len(self.out_rates):
             raise ValueError("out_lanes and out_rates must be same length")
+
+    def __repr__(self):
+        return f"{self.__class__.__name__}({self.name})"
 
     def select_outgoing_lanes(self, n_cars):
         """Pick outgoing lanes for cars according to defined likelihoods"""
@@ -32,3 +40,7 @@ class AbstractIntersection(AbstractAsphalt, ABC):
         lanes = self.select_outgoing_lanes(len(positions))
         for i in range(len(self.out_lanes)):
             self.out_lanes[i].push(positions[lanes == i], speeds[lanes == i])
+
+    def n_queued(self):
+        """Number of cars which are queued waiting at the intersection"""
+        return sum(lane.n_queued() for lane in self.in_lanes)

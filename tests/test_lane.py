@@ -1,4 +1,4 @@
-from src.streets.lane import Lane
+from src.lane import Lane
 from src.warnings import *
 
 import pytest
@@ -59,6 +59,28 @@ def test_closest_car():
     assert lane.closest_car() == 3
 
 
+def test_statistics():
+    lane = Lane(10)
+    assert lane.n_queued() == 0
+    assert lane.density() == 0
+    assert lane.average_speed() == 0
+    assert lane.flow() == 0
+
+    lane.push([4, 5, 7, 8, 9])
+    assert lane.density() == 0.5
+    assert lane.n_queued() == 3
+    assert lane.average_speed() == 0
+    assert lane.flow() == 0
+
+    lane = Lane(5)
+    lane.positions = np.array([1, 2, 3])
+    lane.speeds = np.array([0, 1, 2])
+    assert lane.n_queued() == 0
+    assert lane.average_speed() == 1
+    assert lane.density() == 0.6
+    assert lane.flow() == 0.6
+
+
 def test_step():
     lane = Lane(10, p_slow=0)
     pos = np.array([3, 5, 9])
@@ -77,3 +99,10 @@ def test_step():
         lane.step()
     assert list(lane.positions) == [7, 8, 9]
     assert list(lane.speeds) == [0, 0, 0]
+
+
+def test_to_array():
+    lane = Lane(5, p_slow=0)
+    lane.push(np.array([1, 2]))
+    arr = [0, 1, 1, 0, 0]
+    assert list(lane.to_array()) == arr

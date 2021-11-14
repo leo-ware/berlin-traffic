@@ -15,6 +15,9 @@ class AbstractAsphalt(ABC):
     def __hash__(self) -> int:
         return hash(str(self))
 
+    # def __eq__(self, other):
+    #     return isinstance(other, AbstractAsphalt) and (str(self) == str(other))
+
     @abstractmethod
     def push(self, positions: np.array, speeds: np.array) -> None:
         pass
