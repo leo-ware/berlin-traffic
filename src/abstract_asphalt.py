@@ -20,12 +20,15 @@ class AbstractAsphalt(ABC):
 
     @abstractmethod
     def push(self, positions: np.array, speeds: np.array) -> None:
+        """add cars with the given positions and speeds"""
         pass
 
     @abstractmethod
     def step(self) -> None:
+        """state update for one time-step of the model"""
         pass
 
     @abstractmethod
     def space_available(self) -> bool:
+        """whether one additional car can be accepted"""
         pass

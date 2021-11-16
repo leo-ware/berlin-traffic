@@ -5,11 +5,12 @@ import random
 
 
 class OnRamp(AbstractAsphalt):
-    def __init__(self, next=None, p=1):
+    def __init__(self, next: AbstractAsphalt = None, p=1):
         """Generates a car each step with probability p"""
         super().__init__()
         self.p = p
         self.next = next
+        self.blocks = 0
 
     def __repr__(self):
         return "<>"
@@ -18,7 +19,10 @@ class OnRamp(AbstractAsphalt):
         if self.next is None:
             raise NoOutlet()
         elif random.random() < self.p:
-            self.next.push(np.array([0]), np.array([0]))
+            if self.next.space_available():
+                self.next.push(np.array([0]), np.array([0]))
+            else:
+                self.blocks += 1
 
     def space_available(self) -> bool:
         return False

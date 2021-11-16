@@ -2,13 +2,19 @@ from src.abstract_asphalt import AbstractAsphalt
 from src.exceptions import TooCrowded
 
 import numpy as np
-import matplotlib.pyplot as plt
 
 
 class Lane(AbstractAsphalt):
     def __init__(self, length=100, p_slow=0.1, next: AbstractAsphalt = None, green=True, speed_limit=5):
         """Class that represents a single, unidirectional lane"""
         super().__init__()
+
+        if length < 1:
+            raise ValueError("length must be strictly positive")
+        if not 0 <= p_slow < 1:
+            raise ValueError("p_slow must be on the semi-open interval [0, 1)")
+        if not speed_limit > 0:
+            raise ValueError("speed_limit must be strictly positive")
 
         # params
         self.length = length
@@ -21,8 +27,38 @@ class Lane(AbstractAsphalt):
         self.speeds = np.array([])
         self.positions = np.array([])
 
-        # history
-        self.hist = []
+    def n_spaces_available(self):
+        """the location of the farthest back car (= number of cars lane can accept)"""
+        if len(self.positions):
+            return self.positions[0]
+        else:
+            return self.length
+
+    def space_available(self) -> bool:
+        return self.n_spaces_available() > 0
+
+    def blocked(self):
+        """whether we should let cars out the end"""
+        return self.green and (self.next is None or self.next.space_available())
+
+    def n_queued(self) -> int:
+        """Number of cars which are queued at the end of the lane"""
+        crushed_pos = np.arange(-len(self.positions), 0) + self.length
+        return np.sum(crushed_pos == self.positions)
+
+    def density(self) -> float:
+        """Portion of the lane which is full of cars"""
+        return len(self.positions) / self.length
+
+    def average_speed(self) -> float:
+        """The average speed of cars in the lane"""
+        if len(self.positions) == 0:
+            return 0
+        return np.mean(self.speeds)
+
+    def flow(self) -> float:
+        """The flow of the lane"""
+        return self.density() * self.average_speed()
 
     def step(self) -> None:
         """Process one time step of the simulation"""
@@ -31,7 +67,7 @@ class Lane(AbstractAsphalt):
             self.speeds += 1
 
             # step 2: slowing down
-            backstop = (np.max(self.positions) + self.speed_limit + 1) if self.green else self.length
+            backstop = (np.max(self.positions) + self.speed_limit + 1) if self.blocked() else self.length
             space_to_next = np.diff(np.append(self.positions, backstop))
             self.speeds = np.minimum(self.speeds, space_to_next - 1)
             self.speeds = np.minimum(self.speeds, self.speed_limit)
@@ -44,8 +80,6 @@ class Lane(AbstractAsphalt):
 
             if self.green:
                 self.flush()
-
-        self.hist.append(self.to_array())
 
     def flush(self) -> None:
         """Remove cars which have driven past the end of the lane"""
@@ -60,35 +94,6 @@ class Lane(AbstractAsphalt):
         if self.next and len(flushed_positions):
             self.next.push(flushed_positions - self.length, flushed_speeds)
 
-    def n_spaces_available(self):
-        """the location of the farthest back car (= number of cars lane can accept)"""
-        if len(self.positions):
-            return self.positions[0]
-        else:
-            return self.length
-
-    def space_available(self) -> bool:
-        return self.n_spaces_available() > 0
-
-    def n_queued(self) -> int:
-        """Number of cars which are queued at the end of the lane"""
-        crushed_pos = np.arange(-len(self.positions), 0) + self.length
-        return np.sum(crushed_pos == self.positions)
-
-    def density(self) -> float:
-        """Portion of the lane which is full of cars"""
-        return len(self.positions)/self.length
-
-    def average_speed(self) -> float:
-        """The average speed of cars in the lane"""
-        if len(self.positions) == 0:
-            return 0
-        return np.mean(self.speeds)
-
-    def flow(self) -> float:
-        """The flow of the lane"""
-        return self.density() * self.average_speed()
-
     def push(self, positions, speeds = None) -> None:
         """Add new cars to the beginning of the lane"""
 
@@ -97,9 +102,9 @@ class Lane(AbstractAsphalt):
                 raise ValueError("positions and speeds must be same length")
 
             closest_car = self.n_spaces_available()
-            if len(positions) >= closest_car:
-                return
-                # raise TooCrowded("no space in lane")
+            if len(positions) > closest_car:
+                print("stuff", len(positions), closest_car)
+                raise TooCrowded("no space in lane")
 
             max_pos = np.arange(len(positions)) + (closest_car - len(positions))
             positions = np.minimum(max_pos, positions)
@@ -116,26 +121,3 @@ class Lane(AbstractAsphalt):
         arr = np.zeros(int(self.length))
         arr.put(self.positions.astype(int), 1)
         return arr
-
-    # dataviz
-    def space_time_plot(self):
-        step_numbers = []
-        positions = []
-        for step, arr in enumerate(self.hist):
-            pos = np.nonzero(arr)
-            stp = np.zeros_like(pos)
-            stp.fill(step)
-
-            positions.append(pos)
-            step_numbers.append(stp)
-
-        positions = np.hstack(positions)
-        step_numbers = np.hstack(step_numbers)
-
-        print(step_numbers)
-        print(positions)
-
-        plt.scatter(positions, step_numbers, s=1, c="black")
-        plt.ylabel("timestep")
-        plt.xlabel("position")
-        plt.show()

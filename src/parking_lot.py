@@ -6,9 +6,6 @@ class ParkingLot(AbstractAsphalt):
         super().__init__()
         self.n_parked_cars = 0
 
-    def __repr__(self):
-        return "[]"
-
     def step(self):
         pass
 

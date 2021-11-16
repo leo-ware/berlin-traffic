@@ -43,10 +43,6 @@ def test_flush():
     lane.flush()
     assert list(lane.positions) == [5]
 
-    lane = Lane(0)
-    lane.flush()
-    assert list(lane.positions) == []
-
     lane = Lane(10)
     lane.flush()
     assert list(lane.positions) == []
@@ -57,6 +53,15 @@ def test_closest_car():
     assert lane.n_spaces_available() == 10
     lane.push([3, 6])
     assert lane.n_spaces_available() == 3
+
+
+def test_space_available():
+    lane = Lane(5)
+    assert lane.space_available()
+    lane.push([2])
+    assert lane.space_available()
+    lane.push([0])
+    assert not lane.space_available()
 
 
 def test_statistics():

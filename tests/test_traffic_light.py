@@ -3,6 +3,24 @@ from src.traffic_light import *
 import pytest
 
 
+def test_init():
+    PeriodicAlternatingTrafficLight()
+    PeriodicRandomTrafficLight()
+    PeriodicAdaptiveTrafficLight()
+
+
+def test_space_available():
+    lane = Lane(5)
+    light = PeriodicAlternatingTrafficLight(out_lanes=[lane])
+    light.setup()
+
+    assert light.space_available()
+    lane.push([2])
+    assert light.space_available()
+    lane.push([0])
+    assert not light.space_available()
+
+
 def test_index_green():
     lanes = [Lane(10, green=True) for _ in range(10)]
     light = PeriodicAlternatingTrafficLight("foo", in_lanes=lanes)
@@ -60,10 +78,8 @@ def test_periodic_adaptive():
 
     lane1.push([4])
     light.step()
-    print(lane1.n_queued(), lane2.n_queued())
     assert light.index_green == 0
 
     lane2.push([3, 4])
     light.step()
-    print(lane1.n_queued(), lane2.n_queued())
     assert light.index_green == 1
