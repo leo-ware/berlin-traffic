@@ -19,7 +19,11 @@ class AbstractIntersection(AbstractAsphalt, ABC):
             raise ValueError("out_lanes and out_rates must be same length")
 
     def __repr__(self):
-        return f"{self.__class__.__name__}({self.name})"
+        # return f"{self.__class__.__name__}({self.name})"
+        return self.name
+
+    def space_available(self) -> bool:
+        return False
 
     @property
     def out_rates(self):

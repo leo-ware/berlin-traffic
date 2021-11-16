@@ -14,3 +14,6 @@ class ParkingLot(AbstractAsphalt):
 
     def push(self, positions, _):
         self.n_parked_cars += len(positions)
+
+    def space_available(self) -> bool:
+        return True

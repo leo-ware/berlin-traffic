@@ -25,3 +25,7 @@ class AbstractAsphalt(ABC):
     @abstractmethod
     def step(self) -> None:
         pass
+
+    @abstractmethod
+    def space_available(self) -> bool:
+        pass

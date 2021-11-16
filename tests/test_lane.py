@@ -1,5 +1,5 @@
 from src.lane import Lane
-from src.warnings import *
+from src.exceptions import *
 
 import pytest
 import numpy as np
@@ -54,9 +54,9 @@ def test_flush():
 
 def test_closest_car():
     lane = Lane(10)
-    assert lane.closest_car() == 10
+    assert lane.n_spaces_available() == 10
     lane.push([3, 6])
-    assert lane.closest_car() == 3
+    assert lane.n_spaces_available() == 3
 
 
 def test_statistics():

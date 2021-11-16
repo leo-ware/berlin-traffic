@@ -1,5 +1,5 @@
 from src.abstract_asphalt import AbstractAsphalt
-from src.warnings import NoOutlet, OneWayError
+from src.exceptions import NoOutlet, OneWayError
 import numpy as np
 import random
 
@@ -19,6 +19,9 @@ class OnRamp(AbstractAsphalt):
             raise NoOutlet()
         elif random.random() < self.p:
             self.next.push(np.array([0]), np.array([0]))
+
+    def space_available(self) -> bool:
+        return False
 
     def push(*_):
         raise OneWayError()

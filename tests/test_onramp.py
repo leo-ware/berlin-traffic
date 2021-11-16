@@ -1,6 +1,6 @@
 import pytest
 
-from src.warnings import NoOutlet, OneWayError
+from src.exceptions import NoOutlet, OneWayError
 from src.on_ramp import OnRamp
 from src.parking_lot import ParkingLot
 

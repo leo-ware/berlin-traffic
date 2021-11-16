@@ -12,28 +12,36 @@ import numpy as np
 
 class Network:
     def __init__(self):
-        self.graph = nx.Graph()
+        self.graph = nx.DiGraph()
         self.lanes = []
         self.on_ramps = []
 
-    # def add_intersection(self, intersection: AbstractIntersection):
-    #     self.graph.add_node(intersection)
+    def add_road(self, a, b, length):
+        lane = Lane(next=b)
+        self.lanes.append(lane)
+        self.graph.add_edge(a, b, length=length, lane=lane)
 
     def connect(self, a, b, length):
-        lane_ab = Lane(next=b, length=length)
-        lane_ba = Lane(next=a, length=length)
-        self.lanes.extend([lane_ba, lane_ab])
-        self.graph.add_edge(a, b, length=length, lanes=[lane_ba, lane_ab])
+        self.add_road(a, b, length)
+        self.add_road(b, a, length)
 
     def add_entry(self, intersection):
         new = OnRamp(next=intersection)
         self.on_ramps.append(new)
-        self.graph.add_edge(intersection, new, length=1)
+        self.graph.add_edge(new, intersection, length=1)
 
     def add_exit(self, intersection: AbstractIntersection):
         new = ParkingLot()
         intersection.out_lanes.append(new)
         self.graph.add_edge(intersection, new, length=1)
+
+    def wire_intersections(self):
+        for u, v, lane in self.graph.edges.data("lane"):
+            if isinstance(lane, Lane):
+                if isinstance(u, AbstractIntersection):
+                    u.out_lanes.append(lane)
+                if isinstance(v, AbstractIntersection):
+                    v.in_lanes.append(lane)
 
     def step(self):
         for thing in chain(self.graph.nodes, self.lanes, self.on_ramps):
@@ -42,15 +50,6 @@ class Network:
     def run(self, n_steps):
         for _ in range(n_steps):
             self.step()
-
-    # statistics
-    def edge_densities(self):
-        dens = []
-        for *_, lanes in self.graph.edges.data("lanes", default=()):
-            dens.append(0)
-            for lane in lanes:
-                dens[-1] += lane.density()/2
-        return dens
 
     # visualization
     def pos(self):
@@ -69,16 +68,7 @@ class Network:
 
     def draw_map(self):
         plt.figure(figsize=(10, 10))
-        nx.draw(
-            self.graph,
-            pos=self.pos(),
-            with_labels=True,
-            node_color=self.node_colors(),
-            # edge_cmap=plt.get_cmap("Reds"),
-            # edge_vmin=0,
-            # edge_vmax=1,
-            # edge_color=self.edge_densities()
-        )
+        nx.draw(self.graph, pos=self.pos(), with_labels=True, node_color=self.node_colors())
         plt.show()
 
     def draw_lanes(self):
@@ -110,27 +100,18 @@ def build_network(nodes, edges, entry_points, exit_points, intersection_factory)
         b = intersections[v]
         network.connect(a, b, length*10)
 
-    # create entry & exit points
-    for intersection in exit_points:
-        network.add_exit(intersections[intersection])
-
-    for intersection in entry_points:
-        network.add_entry(intersections[intersection])
+    # # create entry & exit points
+    # for intersection in exit_points:
+    #     network.add_exit(intersections[intersection])
+    #
+    # for intersection in entry_points:
+    #     network.add_entry(intersections[intersection])
 
     return network
 
 
-from src.graphs.simple import *
+from src.graphs.berlin_map import *
 from src.clover_leaf import CloverLeaf
-
-nodes = list("ABCDE")
-edges = [
-    ["A", "B", 1],
-    ["C", "B", 1],
-    ["C", "D", 1],
-    ["D", "B", 1],
-    ["C", "E", 1],
-]
 
 
 network = build_network(
@@ -144,10 +125,10 @@ network = build_network(
 random.seed(123)
 np.random.seed(456)
 
-network.run(20)
+# network.wire_intersections()
+#
+# network.run(1000)
 network.draw_map()
 
 for lane in network.lanes:
-    print(lane.to_array())
-
-# network.draw_lanes()
+    print(lane.length)

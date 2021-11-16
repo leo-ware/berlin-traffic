@@ -29,7 +29,6 @@ def test_handoffs():
     for _ in range(10):
         ramp.step()
         lane.step()
-        lane.step()
 
     for _ in range(100):
         lane.step()
