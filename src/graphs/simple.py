@@ -1,10 +1,13 @@
 nodes = list("ABCDE")
+
 boundary_nodes = ["A", "E"]
+entry_points = {char: 1 for char in boundary_nodes}
+exit_points = {char: 1 for char in boundary_nodes}
 
 edges = [
-    ["A", "B", 2],
-    ["B", "C", 4],
-    ["C", "D", 1],
-    ["B", "E", 3],
-    ["C", "E", 3]
+    ["A", "B", 20],
+    ["B", "C", 40],
+    ["C", "D", 10],
+    ["B", "E", 30],
+    ["C", "E", 30]
 ]

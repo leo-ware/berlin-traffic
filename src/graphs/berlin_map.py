@@ -19,19 +19,33 @@ nodes = [
     'Zentral und Landesbibliothek'
 ]
 
-boundary_nodes = [
-    'Alexanderplatz',
-    'Brandenburger Tor',
-    'Friedrichstadt-Palast',
-    'Führerbunker',
-    'Haus des Lehrers',
-    'Jannowitzbrücke',
-    'KitKat',
-    'Marion-Gräfin-Dönhoff-Platz',
-    'Michaelkirchplatz',
-    'Museum for Communication',
-    'Parlament der Bäume',
-]
+entry_points = {
+    'Alexanderplatz': 1,
+    'Brandenburger Tor': 1,
+    'Friedrichstadt-Palast': 1,
+    'Führerbunker': 1,
+    'Haus des Lehrers': 1,
+    'Jannowitzbrücke': 1,
+    'KitKat': 1,
+    'Marion-Gräfin-Dönhoff-Platz': 1,
+    'Michaelkirchplatz': 1,
+    'Museum for Communication': 1,
+    'Parlament der Bäume': 1
+}
+
+exit_points = {
+    'Alexanderplatz': 1,
+    'Brandenburger Tor': 1,
+    'Friedrichstadt-Palast': 1,
+    'Führerbunker': 1,
+    'Haus des Lehrers': 1,
+    'Jannowitzbrücke': 1,
+    'KitKat': 1,
+    'Marion-Gräfin-Dönhoff-Platz': 1,
+    'Michaelkirchplatz': 1,
+    'Museum for Communication': 1,
+    'Parlament der Bäume': 1
+}
 
 edges = [
     [

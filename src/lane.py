@@ -27,6 +27,10 @@ class Lane(AbstractAsphalt):
         self.speeds = np.array([])
         self.positions = np.array([])
 
+    def n_cars(self):
+        """the number of cars in the lane"""
+        return len(self.positions)
+
     def n_spaces_available(self):
         """the location of the farthest back car (= number of cars lane can accept)"""
         if len(self.positions):
@@ -103,7 +107,6 @@ class Lane(AbstractAsphalt):
 
             closest_car = self.n_spaces_available()
             if len(positions) > closest_car:
-                print("stuff", len(positions), closest_car)
                 raise TooCrowded("no space in lane")
 
             max_pos = np.arange(len(positions)) + (closest_car - len(positions))

@@ -1,23 +1,30 @@
 from src.lane import Lane
 from src.abstract_intersection import AbstractIntersection
+from src.clover_leaf import CloverLeaf
 from src.on_ramp import OnRamp
 from src.parking_lot import ParkingLot
 
-import random
 import networkx as nx
 import matplotlib.pyplot as plt
 from itertools import chain
-import numpy as np
+from typing import List
 
 
 class Network:
     def __init__(self):
         self.graph = nx.DiGraph()
-        self.lanes = []
-        self.on_ramps = []
+        self.lanes: List[Lane] = []
+        self.on_ramps: List[OnRamp] = []
+        self.parking_lots: List[ParkingLot] = []
+
+    @property
+    def intersections(self):
+        return [i for i in self.graph.nodes if isinstance(i, AbstractIntersection)]
 
     def add_road(self, a, b, length):
         lane = Lane(next=b)
+        a.out_lanes.append(lane)
+        b.in_lanes.append(lane)
         self.lanes.append(lane)
         self.graph.add_edge(a, b, length=length, lane=lane)
 
@@ -25,15 +32,17 @@ class Network:
         self.add_road(a, b, length)
         self.add_road(b, a, length)
 
-    def add_entry(self, intersection):
-        new = OnRamp(next=intersection)
+    def add_entry(self, intersection, p_join: float = 1):
+        new = OnRamp(next=intersection, p=p_join)
         self.on_ramps.append(new)
         self.graph.add_edge(new, intersection, length=1)
 
-    def add_exit(self, intersection: AbstractIntersection):
-        new = ParkingLot()
-        intersection.out_lanes.append(new)
-        self.graph.add_edge(intersection, new, length=1)
+    def add_exit(self, intersection: AbstractIntersection, n_exits=1):
+        for _ in range(n_exits):
+            new = ParkingLot()
+            self.parking_lots.append(new)
+            intersection.out_lanes.append(new)
+            self.graph.add_edge(intersection, new, length=1)
 
     def wire_intersections(self):
         for u, v, lane in self.graph.edges.data("lane"):
@@ -44,7 +53,7 @@ class Network:
                     v.in_lanes.append(lane)
 
     def step(self):
-        for thing in chain(self.graph.nodes, self.lanes, self.on_ramps):
+        for thing in chain(self.intersections, self.lanes, self.on_ramps):
             thing.step()
 
     def run(self, n_steps):
@@ -56,6 +65,7 @@ class Network:
         return nx.kamada_kawai_layout(self.graph, weight="length")
 
     def node_colors(self):
+        """Different colors to indicate intersection/on ramp/parking lot"""
         cols = []
         for node in self.graph.nodes:
             if isinstance(node, AbstractIntersection):
@@ -66,29 +76,24 @@ class Network:
                 cols.append("black")
         return cols
 
-    def draw_map(self):
+    def draw(self):
+        """plot a nice little map of the network"""
         plt.figure(figsize=(10, 10))
         nx.draw(self.graph, pos=self.pos(), with_labels=True, node_color=self.node_colors())
         plt.show()
 
-    def draw_lanes(self):
-        longest_lane = int(max(lane.length for lane in self.lanes))
-        lane_views = []
-        ticks = []
 
-        plt.figure(figsize=(10, 10))
-        for a, b, lanes in self.graph.edges.data("lanes", default=()):
-            for name, lane in zip((a, b), lanes):
-                ticks.append(name)
-                arr = lane.to_array()
-                aug = int(longest_lane - len(arr)) * [-1]
-                lane_views.append(np.hstack([arr, aug]))
-            lane_views.append([-1] * longest_lane)
-        plt.imshow(np.vstack(lane_views))
-        plt.show()
+def build_network(nodes, edges, entry_points, exit_points, intersection_factory=CloverLeaf, distance_scale=10):
+    """Builds the networks object from the given description
 
-
-def build_network(nodes, edges, entry_points, exit_points, intersection_factory):
+    Args:
+        nodes: list of node names
+        edges: list of tuples (intersection_a, intersection_b, street_length)
+        entry_points: dict mapping from intersection name to probability of entry per turn
+        exit_points: dict mapping from intersection name to number of exits there
+        intersection_factory: subclass of AbstractIntersection (default CloverLeaf)
+        distance_scale: multiple lengths by this when creating lanes
+    """
     network = Network()
 
     # create intersections
@@ -98,37 +103,13 @@ def build_network(nodes, edges, entry_points, exit_points, intersection_factory)
     for u, v, length in edges:
         a = intersections[u]
         b = intersections[v]
-        network.connect(a, b, length*10)
+        network.connect(a, b, length*distance_scale)
 
-    # # create entry & exit points
-    # for intersection in exit_points:
-    #     network.add_exit(intersections[intersection])
-    #
-    # for intersection in entry_points:
-    #     network.add_entry(intersections[intersection])
+    # create entry & exit points
+    for intersection, n in exit_points.items():
+        network.add_exit(intersections[intersection], n_exits=n)
+
+    for intersection, p in entry_points.items():
+        network.add_entry(intersections[intersection], p_join=p)
 
     return network
-
-
-from src.graphs.berlin_map import *
-from src.clover_leaf import CloverLeaf
-
-
-network = build_network(
-    nodes,
-    edges,
-    boundary_nodes,
-    boundary_nodes,
-    CloverLeaf
-)
-
-random.seed(123)
-np.random.seed(456)
-
-# network.wire_intersections()
-#
-# network.run(1000)
-network.draw_map()
-
-for lane in network.lanes:
-    print(lane.length)

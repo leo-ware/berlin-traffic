@@ -135,14 +135,14 @@ def draw_graphs():
     unadjusted_fig.show()
 
     # plot with length adjustment
-    # lengths = np.array([l for (*_, l) in G.edges.data("length")])
-    # adj_adjusted = adjust_for_length(G, adj)
-    # adjusted_steady_states = get_steady_states(adj_adjusted)
-    # adjusted_densities = adjusted_steady_states[:, 0]
-    # adjusted_densities /= lengths
-    # adjusted_fig = draw_graph_from_densities(G, adjusted_densities)
-    # adjusted_fig.suptitle("Density of Streets (length-adjusted model)")
-    # adjusted_fig.show()
+    lengths = np.array([l for (*_, l) in G.edges.data("length")])
+    adj_adjusted = adjust_for_length(G, adj)
+    adjusted_steady_states = get_steady_states(adj_adjusted)
+    adjusted_densities = adjusted_steady_states[:, 0]
+    adjusted_densities /= lengths
+    adjusted_fig = draw_graph_from_densities(G, adjusted_densities)
+    adjusted_fig.suptitle("Density of Streets (length-adjusted model)")
+    adjusted_fig.show()
 
 
 if __name__ == "__main__":

@@ -27,7 +27,7 @@ def test_index_green():
 
     for lane in lanes:
         assert not lane.green
-    assert light.index_green is None
+    assert light.get_index_green() is None
 
     light.index_green = 5
     assert lanes[5].green
@@ -58,7 +58,7 @@ def test_periodic_alternating():
     green_indices = []
     for step in range(5):
         light.step()
-        green_indices.append(light.index_green)
+        green_indices.append(light.get_index_green())
     assert green_indices == [0, 1, 2, 0, 1]
 
 
@@ -67,19 +67,19 @@ def test_periodic_random():
     green_indices = []
     for step in range(5):
         light.step()
-        green_indices.append(light.index_green)
+        green_indices.append(light.get_index_green())
     assert sum(green_indices) <= 10
 
 
 def test_periodic_adaptive():
     lane1 = Lane(5)
     lane2 = Lane(5)
-    light = PeriodicRandomTrafficLight(period=1, in_lanes=[lane1, lane2])
+    light = PeriodicAdaptiveTrafficLight(period=1, in_lanes=[lane1, lane2])
 
     lane1.push([4])
-    light.step()
-    assert light.index_green == 0
+    light.n_step()
+    assert light.get_index_green() == 0
 
     lane2.push([3, 4])
-    light.step()
-    assert light.index_green == 1
+    light.n_step()
+    assert light.get_index_green() == 1
