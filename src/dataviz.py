@@ -1,18 +1,17 @@
 import matplotlib.pyplot as plt
-from matplotlib.animation import ArtistAnimation
 import numpy as np
 import networkx as nx
 from collections import defaultdict
 
-from src.graphs.simple import *
-from src.network import build_network
 
-
-def space_time_plot(hist):
+def space_time_plot(hist, show=True, c="black", **kwargs):
     """Takes the history of a lane and generates a space-time plot
 
     Args:
         hist: a list of arrays, where each array comes from a Lane.to_array() call
+        show: whether to call plt.show(), default True
+        c: color of scatter points
+        **kwargs passed to plt.scatter()
     """
     step_numbers = []
     positions = []
@@ -28,25 +27,34 @@ def space_time_plot(hist):
     positions = np.hstack(positions)
     step_numbers = np.hstack(step_numbers)
 
-    plt.scatter(positions, step_numbers, s=1, c="black")
+    plt.scatter(positions, step_numbers, s=1, c=c, **kwargs)
     plt.ylabel("timestep")
     plt.xlabel("position")
-    plt.show()
+
+    if show:
+        plt.show()
 
 
-def lane_stats_plot(network, attr="average_speed"):
+def lane_stats_plot(network, attr="average_speed", normalize=False, show=True, **kwargs):
+    plt.figure(figsize=(10, 10))
+
     vals_dict = defaultdict(lambda: 0)
     for u, v, lane in network.graph.edges.data("lane"):
         if lane:
             vals_dict[frozenset([u, v])] += getattr(lane, attr)()/2
 
-    names = np.array([str(name) for name in vals_dict])
+    names = [f"{u.name} <-> {v.name}" for u, v in vals_dict]
     vals = np.array(list(vals_dict.values()))
     x = np.linspace(0, 1, len(vals))
 
-    plt.bar(x, vals, tick_label=names, width=0.8/vals.size)
+    if normalize:
+        vals /= np.max(vals)
+
+    plt.bar(x, vals, tick_label=names, width=0.8/vals.size, **kwargs)
     plt.xticks(rotation=90)
-    plt.show()
+
+    if show:
+        plt.show()
 
 
 def translate(vals, x1, y1, x2, y2):
@@ -71,8 +79,10 @@ def draw_cars(network):
 
     # plot intersections
     nodes_plot = nx.draw_networkx_nodes(network.graph, pos, nodelist=network.intersections, node_color="red", node_size=10)
+    nodes_plot.set_animated(True)
+
     names = {node: node.name for node in network.intersections}
-    # labels_plot = nx.draw_networkx_labels(network.graph, pos, labels=names, horizontalalignment="left", verticalalignment="top")
+    nx.draw_networkx_labels(network.graph, pos, labels=names, horizontalalignment="left", verticalalignment="top")
 
     # plot traffic
     plots = [nodes_plot]
@@ -87,20 +97,3 @@ def draw_cars(network):
 
     return plots
 
-
-network = build_network(nodes, edges, entry_points, exit_points)
-
-# push fake car data
-for lane in network.lanes:
-    lane.push([1, 5, 6, 8])
-
-# draw_cars(network)
-
-fig = plt.figure()
-frames = []
-for _ in range(10):
-    network.step()
-    frames.append(draw_cars(network))
-
-anim = ArtistAnimation(fig, artists=frames, blit=True, interval=50)
-anim.save("../imgs/foo.gif")

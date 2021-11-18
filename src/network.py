@@ -83,7 +83,7 @@ class Network:
         plt.show()
 
 
-def build_network(nodes, edges, entry_points, exit_points, intersection_factory=CloverLeaf, distance_scale=10):
+def build_network(nodes, edges, entry_points=None, exit_points=None, intersection_factory=CloverLeaf, distance_scale=10):
     """Builds the networks object from the given description
 
     Args:
@@ -106,10 +106,12 @@ def build_network(nodes, edges, entry_points, exit_points, intersection_factory=
         network.connect(a, b, length*distance_scale)
 
     # create entry & exit points
-    for intersection, n in exit_points.items():
-        network.add_exit(intersections[intersection], n_exits=n)
+    if exit_points:
+        for intersection, n in exit_points.items():
+            network.add_exit(intersections[intersection], n_exits=n)
 
-    for intersection, p in entry_points.items():
-        network.add_entry(intersections[intersection], p_join=p)
+    if entry_points:
+        for intersection, p in entry_points.items():
+            network.add_entry(intersections[intersection], p_join=p)
 
     return network

@@ -47,6 +47,13 @@ def test_running():
     n.add_entry(a)
     n.add_exit(b)
 
+    # make sure we got connected right
+    assert len(a.out_lanes) == 1
+    assert len(b.out_lanes) == 2
+    assert len(a.in_lanes) == 1
+    assert len(b.in_lanes) == 1
+    assert {lane.next for *_, lane in n.graph.edges.data("lane") if lane} == {a, b}
+
     assert len(n.parking_lots) == 1
     lot = n.parking_lots[0]
     ramp = n.on_ramps[0]

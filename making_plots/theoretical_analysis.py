@@ -119,27 +119,26 @@ def draw_graph_from_densities(G, densities):
     return fig
 
 
+G = make_graph(edges)
+adj = get_adj_matrix(G)
+
+# plot without length adjustment
+steady_states = get_steady_states(adj)
+densities = steady_states[:, 0]
+
+# plot with length adjustment
+lengths = np.array([l for (*_, l) in G.edges.data("length")])
+adj_adjusted = adjust_for_length(G, adj)
+adjusted_steady_states = get_steady_states(adj_adjusted)
+adjusted_densities = adjusted_steady_states[:, 0]
+adjusted_densities /= lengths
+
+
 def draw_graphs():
-    # from import
-    global edges
-
-    G = make_graph(edges)
-    adj = get_adj_matrix(G)
-
-    # plot without length adjustment
-    steady_states = get_steady_states(adj)
-    densities = steady_states[:, 0]
-
     unadjusted_fig = draw_graph_from_densities(G, densities)
     unadjusted_fig.suptitle("Density of Streets (unadjusted model)")
     unadjusted_fig.show()
 
-    # plot with length adjustment
-    lengths = np.array([l for (*_, l) in G.edges.data("length")])
-    adj_adjusted = adjust_for_length(G, adj)
-    adjusted_steady_states = get_steady_states(adj_adjusted)
-    adjusted_densities = adjusted_steady_states[:, 0]
-    adjusted_densities /= lengths
     adjusted_fig = draw_graph_from_densities(G, adjusted_densities)
     adjusted_fig.suptitle("Density of Streets (length-adjusted model)")
     adjusted_fig.show()
