@@ -20,8 +20,8 @@ class AbstractIntersection(AbstractAsphalt, ABC):
         self.assignments = None
 
     def __repr__(self):
-        # return f"{self.__class__.__name__}({self.name})"
-        return self.name
+        return f"{self.__class__.__name__}({self.name})"
+        # return self.name
 
     def setup(self):
         """function must be run before first step"""

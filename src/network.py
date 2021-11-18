@@ -8,6 +8,7 @@ import networkx as nx
 import matplotlib.pyplot as plt
 from itertools import chain
 from typing import List
+from collections import defaultdict
 
 
 class Network:
@@ -115,3 +116,17 @@ def build_network(nodes, edges, entry_points=None, exit_points=None, intersectio
             network.add_entry(intersections[intersection], p_join=p)
 
     return network
+
+
+def avg_across_lanes(network, func):
+    """Calculates a function's average value between incoming and outgoing lanes for every street in the network
+
+    Args:
+        network: a Network object
+        func: a function which takes two intersections and a lane (in that order) and returns a number
+    """
+    vals = defaultdict(lambda: 0)
+    for u, v, lane in network.graph.edges.data("lane"):
+        if lane:
+            vals[frozenset([u, v])] += func(u, v, lane)/2
+    return dict(vals)
