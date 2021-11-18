@@ -1,10 +1,8 @@
 import numpy as np
-import matplotlib.pyplot as plt
-import cvxpy as cp
+import pygad
 
 from src.network import build_network, avg_across_lanes
 from src.traffic_light import PeriodicAlternatingTrafficLight
-from src.dataviz import lane_stats_plot
 
 from src.graphs.berlin_map import nodes, edges, edges_with_data, boundary_points
 
@@ -21,50 +19,65 @@ def cost_per_lane(u, v, lane):
         return (obs_value - exp_value)**2
 
 
-def cost(entry_rates, exit_rates):
+def cost(entry_rates, exit_rates, n_steps=500):
+    """
+    Run the sim with these entry and exit rates and find the MSE between
+    simulated average speeds and empirical ones
+    """
+
     entry_dict = {n: float(r) for n, r in zip(boundary_points, entry_rates)}
     exit_dict = {n: int(r) for n, r in zip(boundary_points, exit_rates)}
 
     network = build_network(nodes, edges, entry_dict, exit_dict, PeriodicAlternatingTrafficLight)
-    network.run(500)
+    network.run(n_steps)
 
     return np.mean(list(avg_across_lanes(network, cost_per_lane).values()))
 
 
-def optimize():
-    n_boundary_points = len(boundary_points)
-    entry = cp.Variable(n_boundary_points, nonneg=True)
-    exit = cp.Variable(n_boundary_points, integer=True)
+def pg_fitness(vals, _):
+    """Cost function only formatted for genetic optimizer"""
+    # these are probabilities
+    entry = vals[:len(boundary_points)]
+    entry = 1 / entry
 
-    constraints = [
-        entry <= 1,
-        exit >= 1,
-        exit <= 10
-    ]
+    # these are integers
+    exit = vals[len(boundary_points):]
+    exit = (exit // 1).astype(int)
 
-    objective = cp.Minimize(cost(entry, exit))
-
-    prob = cp.Problem(objective, constraints)
-
-    prob.solve()
-
-    print(entry.value)
-    print(exit.value)
-
-optimize()
+    return -cost(entry, exit)
 
 
-# def plot_solution(entry_rates, exit_rates):
-#
-# network.run(1000)
-# # lane_stats_plot(network, "density", normalize=True)
-#
-#     lane_stats_plot(network, "average_speed", normalize=True, show=False, alpha=0.2, label="simulated")
-#
-#     google_maps_speeds = np.array(google_maps_speeds)
-#     y = (google_maps_speeds/np.max(google_maps_speeds)).reshape(-1)
-#     plt.bar(x=np.linspace(0, 1, len(google_maps_speeds)), height=y, width=0.8/len(google_maps_speeds), alpha=0.2, label="real")
-#
-#     plt.title("Comparison of simulated and real speeds")
-#     plt.legend()
-#     plt.show()
+def optimize(gens=10):
+    ga = pygad.GA(
+        # problem specific params
+        fitness_func=pg_fitness,
+        num_genes=len(boundary_points)*2,
+        init_range_low=1,
+        init_range_high=10,
+
+        # general optimizer params
+        num_generations=gens,
+        num_parents_mating=4,
+        sol_per_pop=8,
+        parent_selection_type="sss",
+        keep_parents=1,
+        crossover_type="single_point",
+        mutation_type="random",
+        mutation_percent_genes=10,
+    )
+    ga.run()
+    best = ga.best_solution()
+    vals = best[0]
+
+    # convert to usable values
+    entry = vals[:len(boundary_points)]
+    entry = 1 / entry
+
+    exit = vals[len(boundary_points):]
+    exit = (exit // 1).astype(int)
+
+    return entry, exit
+
+
+if __name__ == "__main__":
+    print(optimize())

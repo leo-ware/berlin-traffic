@@ -33,34 +33,14 @@ boundary_points = [
     'Parlament der Bäume'
 ]
 
-entry_points = {
-    'Alexanderplatz': 1,
-    'Brandenburger Tor': 1,
-    'Friedrichstadt-Palast': 1,
-    'Führerbunker': 1,
-    'Haus des Lehrers': 1,
-    'Jannowitzbrücke': 1,
-    'KitKat': 1,
-    'Marion-Gräfin-Dönhoff-Platz': 1,
-    'Michaelkirchplatz': 1,
-    'Museum for Communication': 1,
-    'Parlament der Bäume': 1
-}
+# these are the empirically derived values i got from the genetic algorithm in parameter_fitting.py
+entry_rates = [0.14032044, 0.30658623, 0.10912543, 0.23781625, 0.12085641, 0.10615083, 0.20457665, 0.29638999, 0.80486029, 0.74148195, 0.11672643]
+exit_rates = [7, 1, 3, 4, 8, 2, 9, 3, 6, 1, 6]
 
-exit_points = {
-    'Alexanderplatz': 1,
-    'Brandenburger Tor': 1,
-    'Friedrichstadt-Palast': 1,
-    'Führerbunker': 1,
-    'Haus des Lehrers': 1,
-    'Jannowitzbrücke': 1,
-    'KitKat': 1,
-    'Marion-Gräfin-Dönhoff-Platz': 1,
-    'Michaelkirchplatz': 1,
-    'Museum for Communication': 1,
-    'Parlament der Bäume': 1
-}
+entry_points = dict(zip(boundary_points, entry_rates))
+exit_points = dict(zip(boundary_points, exit_rates))
 
+# each sublist has two intersections on either side of the street, then length (in km), then avg speed
 edges_with_data = [
     [
         'Unter den Linden',
